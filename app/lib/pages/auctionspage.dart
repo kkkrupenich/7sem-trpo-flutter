@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'models.dart';
-import 'widgets.dart';
+import '../models.dart';
+import '../widgets.dart';
 
 class AuctionsPage extends StatefulWidget {
   const AuctionsPage({Key? key}) : super(key: key);
@@ -23,7 +23,20 @@ class _AuctionsPageState extends State<AuctionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar(),
-      body: ListView(children: cars.map((car) => carCard(car)).toList()),
+      body: ListView(
+          children: cars
+              .map((car) => GestureDetector(
+                    child: carCardForAuc(car),
+                    onTap: () {
+                      setState(() {
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (context) => const AuctionWidget(),
+                          settings: RouteSettings(arguments: car)
+                          ));
+                      });
+                    },
+                  ))
+              .toList()),
     );
   }
 
@@ -40,6 +53,17 @@ class _AuctionsPageState extends State<AuctionsPage> {
     ),
     backgroundColor: Colors.black,
     centerTitle: true,
+    actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.add, color: Colors.white,),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CreateAuctionPage()),
+            );
+          },
+        ),
+      ],
   );
 }
 }

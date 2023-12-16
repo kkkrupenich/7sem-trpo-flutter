@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'homepage.dart';
-import 'adspage.dart';
-import 'auctionspage.dart';
-import 'favoritespage.dart';
-import 'profilepage.dart';
+import 'pages/homepage.dart';
+import 'pages/adspage.dart';
+import 'pages/auctionspage.dart';
+import 'pages/favoritespage.dart';
+import 'pages/profilepage.dart';
 
 void main() {
   runApp(MyApp());

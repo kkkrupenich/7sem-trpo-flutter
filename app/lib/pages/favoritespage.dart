@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'models.dart';
-import 'widgets.dart';
+import '../models.dart';
+import '../widgets.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+class FavoritesPage extends StatefulWidget {
+  const FavoritesPage({Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<FavoritesPage> createState() => _FavoritesPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _FavoritesPageState extends State<FavoritesPage> {
   List<CarModel> cars = [
-    CarModel('Dodge', 'Challenger', 'pizdec\npizdec\npizdec\npizdec'),
-    CarModel('Dodge', 'Charger', 'pizdec'),
+    CarModel('bmw', 'm3', 'favorites'),
+    CarModel('bmw', 'm5 e60', 'favorites'),
     CarModel('bmw', 'm6', 'favorites'),
     CarModel('bmw', '7', 'favorites'),
-    CarModel('audi', 'sq4', 'auction'),
-    CarModel('audi', 'e-tron', 'auction'),
+    CarModel('bmw', '8', 'favorites'),
+    CarModel('bmw', 'xm', 'favorites'),
   ];
 
   @override
@@ -41,18 +41,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   AppBar appBar() {
-    return AppBar(
-      title: Text(
-        'Home',
-        style: TextStyle(
-          fontSize: 20,
-          letterSpacing: 2,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
+  return AppBar(
+    title: Text(
+      'Favorites',
+      style: TextStyle(
+        fontSize: 20,
+        letterSpacing: 2,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
       ),
-      backgroundColor: Colors.black,
-      centerTitle: true,
-    );
-  }
+    ),
+    backgroundColor: Colors.black,
+    centerTitle: true,
+  );
+}
 }
