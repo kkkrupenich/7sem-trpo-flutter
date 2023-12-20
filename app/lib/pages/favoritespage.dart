@@ -3,13 +3,15 @@ import '../models.dart';
 import '../widgets.dart';
 
 class FavoritesPage extends StatefulWidget {
-  const FavoritesPage({Key? key}) : super(key: key);
+  final bool isAuthenticated;
+  FavoritesPage({required this.isAuthenticated});
 
   @override
   State<FavoritesPage> createState() => _FavoritesPageState();
 }
 
 class _FavoritesPageState extends State<FavoritesPage> {
+
   List<CarModel> cars = [
     CarModel('bmw', 'm3', 'favorites'),
     CarModel('bmw', 'm5 e60', 'favorites'),
@@ -30,7 +32,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                     onTap: () {
                       setState(() {
                         Navigator.push(context, MaterialPageRoute(
-                          builder: (context) => const AdvertismentWidget(),
+                          builder: (context) => AdvertismentWidget(isAuth: widget.isAuthenticated,),
                           settings: RouteSettings(arguments: car)
                           ));
                       });

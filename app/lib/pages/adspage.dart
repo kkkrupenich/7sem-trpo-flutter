@@ -3,11 +3,14 @@ import '../models.dart';
 import '../widgets.dart';
 
 class AdvertismentsPage extends StatefulWidget {
-  const AdvertismentsPage({Key? key}) : super(key: key);
+  final bool isAuthenticated;
+  AdvertismentsPage({required this.isAuthenticated});
 
   @override
-  State<AdvertismentsPage> createState() => _AdvertismentsPageState();
+  State<AdvertismentsPage> createState() => _AdvertismentsPageState();  
 }
+
+
 
 class _AdvertismentsPageState extends State<AdvertismentsPage> {
   List<CarModel> cars = [
@@ -32,8 +35,7 @@ class _AdvertismentsPageState extends State<AdvertismentsPage> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    const AdvertismentWidget(),
+                                builder: (context) => AdvertismentWidget(isAuth: widget.isAuthenticated,),
                                 settings: RouteSettings(arguments: car)));
                       });
                     },
@@ -62,10 +64,12 @@ class _AdvertismentsPageState extends State<AdvertismentsPage> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CreateAdvertisementPage()),
-            );
+            if (widget.isAuthenticated) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateAdvertisementPage()),
+              );
+            }
           },
         ),
       ],

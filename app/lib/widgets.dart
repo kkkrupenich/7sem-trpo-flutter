@@ -65,7 +65,8 @@ Widget carCardForAuc(car) {
 }
 
 class AdvertismentWidget extends StatelessWidget {
-  const AdvertismentWidget({super.key});
+  final bool isAuth;
+  AdvertismentWidget({required this.isAuth});
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +81,9 @@ class AdvertismentWidget extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.favorite_outline),
             onPressed: () {
-              print('favorite');
+              if (isAuth) {
+                print('favorite');
+              }
             },
           ),
         ],

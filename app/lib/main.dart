@@ -5,6 +5,8 @@ import 'pages/adspage.dart';
 import 'pages/auctionspage.dart';
 import 'pages/favoritespage.dart';
 import 'pages/profilepage.dart';
+import 'api.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -32,13 +34,36 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
 
-  final screens = [
-    HomePage(),
-    AdvertismentsPage(),
-    FavoritesPage(),
-    AuctionsPage(),
-    ProfilePage(),
-  ];
+  bool isAuth = false;
+
+  @override
+  void initState() {
+    super.initState();
+    checkAuthentication();
+  }
+
+  Future<void> checkAuthentication() async {
+    final token = await getTokenFromSharedPreferences();
+    setState(() {
+      isAuth = token != null;
+    });
+  }
+
+  List<Widget> getScreens() {
+    return [
+      HomePage(isAuthenticated: isAuth),
+      AdvertismentsPage(isAuthenticated: isAuth),
+      FavoritesPage(isAuthenticated: isAuth),
+      AuctionsPage(isAuthenticated: isAuth),
+      ProfilePage(
+        isAuthenticated: isAuth, 
+        onChanged: (newValue) {
+          setState(() {
+            isAuth = newValue;
+          });
+        },),
+    ];
+  }
 
   int currentIndex = 0;
 
@@ -46,9 +71,9 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: screens[currentIndex],
+        child: getScreens()[currentIndex],
       ),
-      bottomNavigationBar: _bottomNavBar()
+      bottomNavigationBar: _bottomNavBar(),
     );
   }
 
@@ -73,7 +98,17 @@ class _MainScreenState extends State<MainScreen> {
           selectedIndex: currentIndex,
           onTabChange: (index) {
             setState(() {
-              currentIndex = index;
+              if (!isAuth && index == 2) {
+                final snackBar = SnackBar(
+                  content: Text('You dont have rights'),
+                  duration: Duration(seconds: 2)
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              }
+              else {
+                currentIndex = index;
+              }
             });
           },
         ),
@@ -81,3 +116,4 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
+

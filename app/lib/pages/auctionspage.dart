@@ -3,7 +3,8 @@ import '../models.dart';
 import '../widgets.dart';
 
 class AuctionsPage extends StatefulWidget {
-  const AuctionsPage({Key? key}) : super(key: key);
+  final bool isAuthenticated;
+  AuctionsPage({required this.isAuthenticated});
 
   @override
   State<AuctionsPage> createState() => _AuctionsPageState();
@@ -57,10 +58,13 @@ class _AuctionsPageState extends State<AuctionsPage> {
         IconButton(
           icon: Icon(Icons.add, color: Colors.white,),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CreateAuctionPage()),
-            );
+            if (widget.isAuthenticated) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateAuctionPage()),
+              );
+            }
+            
           },
         ),
       ],

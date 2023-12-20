@@ -1,9 +1,11 @@
+import 'package:app/api.dart';
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../widgets.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  final bool isAuthenticated;
+  HomePage({required this.isAuthenticated});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -21,23 +23,46 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: appBar(),
-      body: ListView(
-          children: cars
-              .map((car) => GestureDetector(
-                    child: carCard(car),
-                    onTap: () {
-                      setState(() {
-                        Navigator.push(context, MaterialPageRoute(
-                          builder: (context) => const AdvertismentWidget(),
-                          settings: RouteSettings(arguments: car)
-                          ));
-                      });
-                    },
-                  ))
-              .toList()),
-    );
+    return FutureBuilder<Ad?>(
+        future:
+            Future.delayed(Duration(seconds: 1), () => getAdById(5)),
+        builder: (BuildContext context, AsyncSnapshot<Ad?> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            ); // Отображаем индикатор загрузки пока данные загружаются
+          } else if (snapshot.hasError) {
+            return Text(
+                'Error: ${snapshot.error}'); // Обработка ошибок, если они возникают
+          } else {
+            // Используйте полученные данные здесь
+            Ad? ad = snapshot.data;
+            print(ad!.id);
+            cars.add(CarModel(ad.car.brand.name, ad.images.first, ad.images.first));
+            return Scaffold(
+              appBar: appBar(),
+              body: ListView(
+                  children: cars
+                      .map((car) => GestureDetector(
+                            child: carCard(car),
+                            onTap: () {
+                              setState(() {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            AdvertismentWidget(
+                                              isAuth: widget.isAuthenticated,
+                                            ),
+                                        settings:
+                                            RouteSettings(arguments: car)));
+                              });
+                            },
+                          ))
+                      .toList()),
+            );
+          }
+        });
   }
 
   AppBar appBar() {
