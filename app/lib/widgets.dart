@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'models.dart';
 
-Widget carCard(car) {
+Widget carCard(ad) {
   return Card(
     margin: EdgeInsets.fromLTRB(15, 15, 15, 15),
     child: Container(
@@ -15,15 +15,15 @@ Widget carCard(car) {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${car.brand} ${car.model}',
+            Text('${ad.car.brand.name} ${ad.car.model.name}',
                 style: TextStyle(
                   fontSize: 22,
                 )),
-            Text('10000 руб.', style: TextStyle(fontSize: 16)),
+            Text('${ad.price} р.', style: TextStyle(fontSize: 18)),
             SizedBox(height: 10),
-            Image.asset('assets/merc.webp'),
+            Image.network('http://10.0.2.2:8000/${ad.images.first}'),
             SizedBox(height: 10),
-            Text('1998 г., механика, 1.6 л., бензин, купе',
+            Text('${ad.car.year} г., ${ad.car.gearbox.type.toString().toLowerCase()}, ${ad.car.engine.capacity} л., ${ad.car.engine.type.toString().toLowerCase()}, ${ad.car.bodyType.toString().toLowerCase()}',
                 maxLines: 3, style: TextStyle(fontSize: 16)),
           ],
         ),
@@ -70,7 +70,7 @@ class AdvertismentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final car = ModalRoute.of(context)!.settings.arguments as CarModel;
+    final car = ModalRoute.of(context)!.settings.arguments as Ad;
 
     return Scaffold(
       appBar: AppBar(
@@ -92,7 +92,7 @@ class AdvertismentWidget extends StatelessWidget {
     );
   }
 
-  Stack stackWidget(CarModel car, BuildContext context) {
+  Stack stackWidget(Ad ad, BuildContext context) {
     return Stack(children: [
       SingleChildScrollView(
         child: Container(
@@ -112,19 +112,19 @@ class AdvertismentWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${car.brand} ${car.model}',
+                            '${ad.car.brand.name} ${ad.car.model.name}',
                             style: TextStyle(
                                 fontSize: 28, fontWeight: FontWeight.bold),
                           ),
                           Row(
                             children: [
                               Text(
-                                '50 000 р.',
+                                '${ad.price} р.',
                                 style: TextStyle(
                                     fontSize: 24, fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                '  ≈ 10 000\$',
+                                '  ≈ ${ad.price/3.3}\$',
                                 style: TextStyle(fontSize: 16),
                               ),
                             ],
@@ -141,10 +141,10 @@ class AdvertismentWidget extends StatelessWidget {
                 child: SizedBox(
                   height: 250,
                   child: PageView.builder(
-                    itemCount: 5,
+                    itemCount: ad.images.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return Image.asset(
-                        'assets/merc.webp',
+                      return Image.network(
+                        'http://10.0.2.2:8000/${ad.images[index]}',
                         fit: BoxFit.cover,
                       );
                     },
@@ -162,7 +162,7 @@ class AdvertismentWidget extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Text(
-                  '1998 г., механика, 1.6 л, бензин, 300000 км, купе, передний привод, синий, снят с учета',
+                  '${ad.car.year} г., ${ad.car.gearbox.type.toLowerCase()}, ${ad.car.engine.capacity.toString().toLowerCase()} л., ${ad.car.engine.type.toLowerCase()}, ${ad.car.mileage} км, ${ad.car.bodyType}, ${ad.car.color}',
                   maxLines: 4,
                   textAlign: TextAlign.justify,
                   style: TextStyle(fontSize: 22),
@@ -181,7 +181,7 @@ class AdvertismentWidget extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Text(
-                  'Кузов в достойном состоянии (отражено на фото), передние крылья из пластика (про корозиию можно забыть), мотор как часы,заводиться на холодную и горячюю без проблем,новое лобовое( в которое прекрасно видно,а не затертое родное!!! Новые передние тормозные диски и колодки.в машине делать ничего не надо,сел и поехал.адекватный торг имееться... Кузов в достойном состоянии (отражено на фото), передние крылья из пластика (про корозиию можно забыть), мотор как часы,заводиться на холодную и горячюю без проблем,новое лобовое( в которое прекрасно видно,а не затертое родное!!! Новые передние тормозные диски и колодки.в машине делать ничего не надо,сел и поехал.адекватный торг имееться...',
+                  ad.description,
                   maxLines: 100,
                   textAlign: TextAlign.justify,
                   style: TextStyle(fontSize: 18),
@@ -199,7 +199,7 @@ class AdvertismentWidget extends StatelessWidget {
         left: 20, // Adjust the right position
         child: GestureDetector(
             onTap: () {
-              showInfoDialog(context);
+              showInfoDialog(context, ad.seller);
             },
             child: Container(
               width: MediaQuery.of(context).size.width - 40,
@@ -223,7 +223,7 @@ class AdvertismentWidget extends StatelessWidget {
     ]);
   }
 
-  Future<void> showInfoDialog(BuildContext context) async {
+  Future<void> showInfoDialog(BuildContext context, dynamic seller) async {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -233,9 +233,9 @@ class AdvertismentWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Продавец: *username*'),
+              Text('Продавец: ${seller.name}'),
               SizedBox(height: 10),
-              Text('Номер телефона: *phone*'),
+              Text('Номер телефона: ${seller.phone}'),
             ],
           ),
           actions: <Widget>[

@@ -133,7 +133,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          //update profile
+                          update(emailController.text, phoneController.text, firstnameController.text);
                         },
                         child: Text('Сохранить'),
                       ),

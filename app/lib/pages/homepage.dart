@@ -12,15 +12,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<CarModel> cars = [
-    CarModel('Dodge', 'Challenger', 'pizdec\npizdec\npizdec\npizdec'),
-    CarModel('Dodge', 'Charger', 'pizdec'),
-    CarModel('bmw', 'm6', 'favorites'),
-    CarModel('bmw', '7', 'favorites'),
-    CarModel('audi', 'sq4', 'auction'),
-    CarModel('audi', 'e-tron', 'auction'),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Ad?>(
@@ -36,15 +27,16 @@ class _HomePageState extends State<HomePage> {
                 'Error: ${snapshot.error}'); // Обработка ошибок, если они возникают
           } else {
             // Используйте полученные данные здесь
+            List<Ad> list = [];
             Ad? ad = snapshot.data;
             print(ad!.id);
-            cars.add(CarModel(ad.car.brand.name, ad.images.first, ad.images.first));
+            list.add(ad);
             return Scaffold(
               appBar: appBar(),
               body: ListView(
-                  children: cars
-                      .map((car) => GestureDetector(
-                            child: carCard(car),
+                  children: list
+                      .map((ad) => GestureDetector(
+                            child: carCard(ad),
                             onTap: () {
                               setState(() {
                                 Navigator.push(
@@ -55,7 +47,7 @@ class _HomePageState extends State<HomePage> {
                                               isAuth: widget.isAuthenticated,
                                             ),
                                         settings:
-                                            RouteSettings(arguments: car)));
+                                            RouteSettings(arguments: ad)));
                               });
                             },
                           ))
