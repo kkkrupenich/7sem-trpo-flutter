@@ -1,11 +1,3 @@
-class CarModel {
-  String brand;
-  String model;
-  String description;
-
-  CarModel(this.brand, this.model, this.description);
-}
-
 class Seller {
   String name;
   String phone;
@@ -79,6 +71,30 @@ class Ad {
   Seller seller;
   Car car;
   List<String> images;
+  bool isFavorite;
 
-  Ad(this.id, this.price, this.description, this.status, this.seller, this.car, this.images);
+  Ad(this.id, this.price, this.description, this.status, this.seller, this.car, this.images, this.isFavorite);
+}
+
+class Bid {
+  int id;
+  int amount;
+  String date;
+  int buyer;
+
+  Bid(this.id, this.amount, this.date, this.buyer);
+}
+
+class Auction {
+  int id;
+  int price;
+  String description;
+  Seller seller;
+  Car car;
+  String startDate;
+  String endDate;
+  List<String> images;
+  Bid? bid;
+
+  Auction(this.id, this.price, this.description, this.seller, this.car, this.startDate, this.endDate, this.images, this.bid);
 }

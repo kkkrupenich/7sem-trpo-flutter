@@ -7,7 +7,6 @@ import 'pages/favoritespage.dart';
 import 'pages/profilepage.dart';
 import 'api.dart';
 
-
 void main() {
   runApp(MyApp());
 }
@@ -18,10 +17,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Cars',
-        debugShowCheckedModeBanner: false,
-        home: MainScreen(),
-      );
+      title: 'Cars',
+      debugShowCheckedModeBanner: false,
+      home: MainScreen(),
+    );
   }
 }
 
@@ -33,7 +32,6 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-
   bool isAuth = false;
 
   @override
@@ -56,12 +54,13 @@ class _MainScreenState extends State<MainScreen> {
       FavoritesPage(isAuthenticated: isAuth),
       AuctionsPage(isAuthenticated: isAuth),
       ProfilePage(
-        isAuthenticated: isAuth, 
+        isAuthenticated: isAuth,
         onChanged: (newValue) {
           setState(() {
             isAuth = newValue;
           });
-        },),
+        },
+      ),
     ];
   }
 
@@ -79,41 +78,36 @@ class _MainScreenState extends State<MainScreen> {
 
   Container _bottomNavBar() {
     return Container(
-      color: Colors.black,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        child: GNav(
-          backgroundColor: Colors.black,
-          color: Colors.white,
-          activeColor: Colors.white,
-          tabBackgroundColor: Colors.grey.shade800,
-          padding: EdgeInsets.all(16),
-          tabs: const [
-            GButton(icon: Icons.home_filled, text: 'Home'),
-            GButton(icon: Icons.car_rental, text: 'Ads'),
-            GButton(icon: Icons.favorite_border, text: 'Favotires'),
-            GButton(icon: Icons.car_repair, text: 'Auctions'),
-            GButton(icon: Icons.person, text: 'Profile'),
-          ],
-          selectedIndex: currentIndex,
-          onTabChange: (index) {
-            setState(() {
-              if (!isAuth && index == 2) {
-                final snackBar = SnackBar(
-                  content: Text('You dont have rights'),
-                  duration: Duration(seconds: 2)
-                );
-
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              }
-              else {
-                currentIndex = index;
-              }
-            });
-          },
-        ),
-      )
-    );
+        color: Colors.black,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: GNav(
+            backgroundColor: Colors.black,
+            color: Colors.white,
+            activeColor: Colors.white,
+            tabBackgroundColor: Colors.grey.shade800,
+            padding: EdgeInsets.all(16),
+            tabs: const [
+              GButton(icon: Icons.home_filled, text: 'Home'),
+              GButton(icon: Icons.car_rental, text: 'Ads'),
+              GButton(icon: Icons.favorite_border, text: 'Favotires'),
+              GButton(icon: Icons.car_repair, text: 'Auctions'),
+              GButton(icon: Icons.person, text: 'Profile'),
+            ],
+            onTabChange: (index) {
+              setState(() {
+                if (!isAuth && index == 2) {
+                  final snackBar = SnackBar(
+                      content: Text('You are not logged in, returning'),
+                      duration: Duration(seconds: 2));
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                } else {
+                  currentIndex = index;
+                }
+              });
+            },
+            selectedIndex: currentIndex,
+          ),
+        ));
   }
 }
-

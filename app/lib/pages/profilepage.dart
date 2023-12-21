@@ -133,7 +133,8 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          update(emailController.text, phoneController.text, firstnameController.text);
+                          update(emailController.text, phoneController.text,
+                              firstnameController.text);
                         },
                         child: Text('Сохранить'),
                       ),
@@ -207,11 +208,13 @@ class LoginScreenState extends State<LoginScreen> {
             height: 20,
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (usernameController.text.isNotEmpty &&
                   passwordController.text.isNotEmpty) {
-                login(usernameController.text, passwordController.text);
-                widget.updateLoginStatus(true);
+                Future<bool> check = login(usernameController.text, passwordController.text);
+                if (await check) {
+                  widget.updateLoginStatus(true); 
+                }
               }
             },
             child: Text('Войти'),
@@ -261,63 +264,70 @@ class RegistrationScreen extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 300,
-            child: Column(children: [
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(hintText: 'Username'),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(hintText: 'Email'),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextField(
-                controller: phoneController,
-                decoration: InputDecoration(hintText: 'Phone'),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextField(
-                controller: firstnameController,
-                decoration: InputDecoration(hintText: 'Firstname'),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextField(
-                controller: passwordController,
-                decoration: InputDecoration(hintText: 'Password'),
-              ),
-            ]),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (usernameController.text.isNotEmpty &&
-                  passwordController.text.isNotEmpty &&
-                  emailController.text.isNotEmpty &&
-                  phoneController.text.isNotEmpty &&
-                  firstnameController.text.isNotEmpty) {
-                register(usernameController.text, emailController.text, phoneController.text, firstnameController.text, passwordController.text);
-                updateLoginStatus(true);
-              }
-            },
-            child: Text('Зарегистрироваться'),
-          ),
-        ],
-      ),
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 300,
+              child: Column(children: [
+                TextField(
+                  controller: usernameController,
+                  decoration: InputDecoration(hintText: 'Username'),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(hintText: 'Email'),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                TextField(
+                  controller: phoneController,
+                  decoration: InputDecoration(hintText: 'Phone'),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                TextField(
+                  controller: firstnameController,
+                  decoration: InputDecoration(hintText: 'Firstname'),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                TextField(
+                  controller: passwordController,
+                  decoration: InputDecoration(hintText: 'Password'),
+                ),
+              ]),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (usernameController.text.isNotEmpty &&
+                    passwordController.text.isNotEmpty &&
+                    emailController.text.isNotEmpty &&
+                    phoneController.text.isNotEmpty &&
+                    firstnameController.text.isNotEmpty) {
+                  Future<bool> check = register(
+                      usernameController.text,
+                      emailController.text,
+                      phoneController.text,
+                      firstnameController.text,
+                      passwordController.text);
+                  if (await check) {
+                    updateLoginStatus(true);
+                  }
+                }
+              },
+              child: Text('Зарегистрироваться'),
+            ),
+          ],
+        ),
       ),
     );
   }

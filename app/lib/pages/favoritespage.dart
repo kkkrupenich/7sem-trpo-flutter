@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../widgets.dart';
+import 'package:app/api.dart';
+
 
 class FavoritesPage extends StatefulWidget {
   final bool isAuthenticated;
@@ -11,35 +13,49 @@ class FavoritesPage extends StatefulWidget {
 }
 
 class _FavoritesPageState extends State<FavoritesPage> {
-
-  List<CarModel> cars = [
-    CarModel('bmw', 'm3', 'favorites'),
-    CarModel('bmw', 'm5 e60', 'favorites'),
-    CarModel('bmw', 'm6', 'favorites'),
-    CarModel('bmw', '7', 'favorites'),
-    CarModel('bmw', '8', 'favorites'),
-    CarModel('bmw', 'xm', 'favorites'),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: appBar(),
-      body: ListView(
-          children: cars
-              .map((car) => GestureDetector(
-                    child: carCard(car),
-                    onTap: () {
-                      setState(() {
-                        Navigator.push(context, MaterialPageRoute(
-                          builder: (context) => AdvertismentWidget(isAuth: widget.isAuthenticated,),
-                          settings: RouteSettings(arguments: car)
-                          ));
-                      });
-                    },
-                  ))
-              .toList()),
-    );
+    return FutureBuilder<List<Ad>?>(
+        future:
+            Future.delayed(Duration(milliseconds: 100), () => getAllFavoriteAds()),
+        builder: (BuildContext context, AsyncSnapshot<List<Ad>?> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            ); // Отображаем индикатор загрузки пока данные загружаются
+          } else if (snapshot.hasError) {
+            return Text(
+                'Error: ${snapshot.error}'); // Обработка ошибок, если они возникают
+          } else if (!snapshot.hasData || snapshot.data == null) {
+            return Text(
+                'NO DATA');
+          } else {
+            // Используйте полученные данные здесь
+            List<Ad>? list = snapshot.data;
+            return Scaffold(
+              appBar: appBar(),
+              body: ListView(
+                  children: list!
+                      .map((ad) => GestureDetector(
+                            child: carCard(ad),
+                            onTap: () {
+                              setState(() {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            AdvertismentWidget(
+                                              isAuth: widget.isAuthenticated,
+                                            ),
+                                        settings:
+                                            RouteSettings(arguments: ad)));
+                              });
+                            },
+                          ))
+                      .toList()),
+            );
+          }
+        });
   }
 
   AppBar appBar() {

@@ -14,10 +14,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Ad?>(
+    return FutureBuilder<List<Ad>?>(
         future:
-            Future.delayed(Duration(seconds: 1), () => getAdById(5)),
-        builder: (BuildContext context, AsyncSnapshot<Ad?> snapshot) {
+            Future.delayed(Duration(milliseconds: 100), () => getAllStatusAds()),
+        builder: (BuildContext context, AsyncSnapshot<List<Ad>?> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(),
@@ -25,16 +25,16 @@ class _HomePageState extends State<HomePage> {
           } else if (snapshot.hasError) {
             return Text(
                 'Error: ${snapshot.error}'); // Обработка ошибок, если они возникают
+          } else if (!snapshot.hasData || snapshot.data == null) {
+            return Text(
+                'NO DATA');
           } else {
             // Используйте полученные данные здесь
-            List<Ad> list = [];
-            Ad? ad = snapshot.data;
-            print(ad!.id);
-            list.add(ad);
+            List<Ad>? list = snapshot.data;
             return Scaffold(
               appBar: appBar(),
               body: ListView(
-                  children: list
+                  children: list!
                       .map((ad) => GestureDetector(
                             child: carCard(ad),
                             onTap: () {

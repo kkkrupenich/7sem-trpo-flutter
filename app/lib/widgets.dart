@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'models.dart';
+import 'api.dart';
+import 'package:intl/intl.dart';
 
 Widget carCard(ad) {
   return Card(
@@ -21,10 +23,14 @@ Widget carCard(ad) {
                 )),
             Text('${ad.price} р.', style: TextStyle(fontSize: 18)),
             SizedBox(height: 10),
-            Image.network('http://10.0.2.2:8000/${ad.images.first}'),
+            Image.network(ad.images.length > 0
+                ? 'http://10.0.2.2:8000/${ad.images.first}'
+                : 'https://www.linearity.io/blog/content/images/size/w1576/format/avif/2023/06/how-to-create-a-car-NewBlogCover.png'),
             SizedBox(height: 10),
-            Text('${ad.car.year} г., ${ad.car.gearbox.type.toString().toLowerCase()}, ${ad.car.engine.capacity} л., ${ad.car.engine.type.toString().toLowerCase()}, ${ad.car.bodyType.toString().toLowerCase()}',
-                maxLines: 3, style: TextStyle(fontSize: 16)),
+            Text(
+                '${ad.car.year} г., ${ad.car.gearbox.type.toString().toLowerCase()}, ${ad.car.engine.capacity} л., ${ad.car.engine.type.toString().toLowerCase()}, ${ad.car.bodyType.toString().toLowerCase()}',
+                maxLines: 3,
+                style: TextStyle(fontSize: 16)),
           ],
         ),
       ),
@@ -32,7 +38,7 @@ Widget carCard(ad) {
   );
 }
 
-Widget carCardForAuc(car) {
+Widget carCardForAuc(auction) {
   return Card(
     margin: EdgeInsets.fromLTRB(15, 15, 15, 15),
     child: Container(
@@ -46,17 +52,26 @@ Widget carCardForAuc(car) {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${car.brand} ${car.model}',
+            Text('${auction.car.brand.name} ${auction.car.model.name}',
                 style: TextStyle(
                   fontSize: 22,
                 )),
-            Text('Начальная ставка: 5000 руб.', style: TextStyle(fontSize: 16)),
-            Text('Текущая ставка: 10000 руб.', style: TextStyle(fontSize: 16)),
+            Text('Начальная ставка: ${auction.price} руб.',
+                style: TextStyle(fontSize: 16)),
+            if (auction.bid != null)
+              Text('Текущая ставка: ${auction.bid.amount} руб.',
+                  style: TextStyle(fontSize: 16))
+            else
+              Text('Текущая ставка: -', style: TextStyle(fontSize: 16)),
             SizedBox(height: 10),
-            Image.asset('assets/merc.webp'),
+            Image.network(auction.images.length > 0
+                ? 'http://10.0.2.2:8000/${auction.images.first}'
+                : 'https://www.linearity.io/blog/content/images/size/w1576/format/avif/2023/06/how-to-create-a-car-NewBlogCover.png'),
             SizedBox(height: 10),
-            Text('1998 г., механика, 1.6 л., бензин, купе',
-                maxLines: 3, style: TextStyle(fontSize: 16)),
+            Text(
+                '${auction.car.year} г., ${auction.car.gearbox.type.toString().toLowerCase()}, ${auction.car.engine.capacity} л., ${auction.car.engine.type.toString().toLowerCase()}, ${auction.car.bodyType.toString().toLowerCase()}',
+                maxLines: 3,
+                style: TextStyle(fontSize: 16)),
           ],
         ),
       ),
@@ -64,31 +79,51 @@ Widget carCardForAuc(car) {
   );
 }
 
-class AdvertismentWidget extends StatelessWidget {
+class AdvertismentWidget extends StatefulWidget {
   final bool isAuth;
   AdvertismentWidget({required this.isAuth});
 
   @override
+  State<AdvertismentWidget> createState() => _AdvertismentWidgetState();
+}
+
+class _AdvertismentWidgetState extends State<AdvertismentWidget> {
+  @override
   Widget build(BuildContext context) {
-    final car = ModalRoute.of(context)!.settings.arguments as Ad;
+    final ad = ModalRoute.of(context)!.settings.arguments as Ad;
 
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
         backgroundColor: Colors.black,
         title: Text('Ad', style: TextStyle(color: Colors.white)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context, 'updated');
+          },
+        ),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.favorite_outline),
+            icon: ad.isFavorite
+                ? Icon(Icons.favorite)
+                : Icon(Icons.favorite_outline),
             onPressed: () {
-              if (isAuth) {
-                print('favorite');
+              if (widget.isAuth) {
+                if (ad.isFavorite) {
+                  deleteFromFavoriteAds(ad.id);
+                } else {
+                  addToFavoriteAds(ad.id);
+                }
+                setState(() {
+                  ad.isFavorite = !ad.isFavorite;
+                });
               }
             },
           ),
         ],
       ),
-      body: stackWidget(car, context),
+      body: stackWidget(ad, context),
     );
   }
 
@@ -124,7 +159,7 @@ class AdvertismentWidget extends StatelessWidget {
                                     fontSize: 24, fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                '  ≈ ${ad.price/3.3}\$',
+                                '  ≈ ${ad.price / 3.3}\$',
                                 style: TextStyle(fontSize: 16),
                               ),
                             ],
@@ -141,12 +176,19 @@ class AdvertismentWidget extends StatelessWidget {
                 child: SizedBox(
                   height: 250,
                   child: PageView.builder(
-                    itemCount: ad.images.length,
+                    itemCount: ad.images.isNotEmpty ? ad.images.length : 1,
                     itemBuilder: (BuildContext context, int index) {
-                      return Image.network(
-                        'http://10.0.2.2:8000/${ad.images[index]}',
-                        fit: BoxFit.cover,
-                      );
+                      if (ad.images.isNotEmpty) {
+                        return Image.network(
+                          'http://10.0.2.2:8000/${ad.images[index]}',
+                          fit: BoxFit.cover,
+                        );
+                      } else {
+                        return Image.network(
+                          'https://www.linearity.io/blog/content/images/size/w1576/format/avif/2023/06/how-to-create-a-car-NewBlogCover.png',
+                          fit: BoxFit.cover,
+                        );
+                      }
                     },
                   ),
                 ),
@@ -252,28 +294,36 @@ class AdvertismentWidget extends StatelessWidget {
   }
 }
 
-class AuctionWidget extends StatelessWidget {
-  const AuctionWidget({super.key});
+class AuctionWidget extends StatefulWidget {
+  final bool isAuth;
+  AuctionWidget({required this.isAuth});
 
   @override
+  State<AuctionWidget> createState() => _AuctionWidgetState();
+}
+
+class _AuctionWidgetState extends State<AuctionWidget> {
+  @override
   Widget build(BuildContext context) {
-    final car = ModalRoute.of(context)!.settings.arguments as CarModel;
+    final car = ModalRoute.of(context)!.settings.arguments as Auction;
 
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
         backgroundColor: Colors.black,
         title: Text('Auction', style: TextStyle(color: Colors.white)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context, 'updated');
+          },
+        ),
       ),
       body: stackWidget(car, context),
     );
   }
 
-  void placeBid(String enteredText) {
-    print('Введенный текст: $enteredText');
-  }
-
-  Stack stackWidget(CarModel car, BuildContext context) {
+  Stack stackWidget(Auction auction, BuildContext context) {
     return Stack(children: [
       SingleChildScrollView(
         child: Container(
@@ -293,16 +343,30 @@ class AuctionWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${car.brand} ${car.model}',
+                            '${auction.car.brand.name} ${auction.car.model.name}',
                             style: TextStyle(
                                 fontSize: 28, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            'Начальная ставка: 50 000 р.',
+                            'Начальная ставка: ${auction.price} р.',
+                            style: TextStyle(fontSize: 22),
+                          ),
+                          if (auction.bid != null)
+                            Text(
+                              'Текущая ставка: ${auction.bid!.amount} р.',
+                              style: TextStyle(fontSize: 22),
+                            )
+                          else
+                            Text(
+                              'Текущая ставка: -',
+                              style: TextStyle(fontSize: 22),
+                            ),
+                          Text(
+                            'Начало аукциона: ${DateFormat('dd.MM HH:mm').format(DateFormat('yyyy-MM-ddTHH:mm:ssZ').parse(auction.startDate))}',
                             style: TextStyle(fontSize: 22),
                           ),
                           Text(
-                            'Текущая ставка 70 000 р.',
+                            'Конец аукциона: ${DateFormat('dd.MM HH:mm').format(DateFormat('yyyy-MM-ddTHH:mm:ssZ').parse(auction.endDate))}',
                             style: TextStyle(fontSize: 22),
                           ),
                         ]),
@@ -317,12 +381,20 @@ class AuctionWidget extends StatelessWidget {
                 child: SizedBox(
                   height: 250,
                   child: PageView.builder(
-                    itemCount: 5,
+                    itemCount:
+                        auction.images.isNotEmpty ? auction.images.length : 1,
                     itemBuilder: (BuildContext context, int index) {
-                      return Image.asset(
-                        'assets/merc.webp',
-                        fit: BoxFit.cover,
-                      );
+                      if (auction.images.isNotEmpty) {
+                        return Image.network(
+                          'http://10.0.2.2:8000/${auction.images[index]}',
+                          fit: BoxFit.cover,
+                        );
+                      } else {
+                        return Image.network(
+                          'https://www.linearity.io/blog/content/images/size/w1576/format/avif/2023/06/how-to-create-a-car-NewBlogCover.png',
+                          fit: BoxFit.cover,
+                        );
+                      }
                     },
                   ),
                 ),
@@ -338,7 +410,7 @@ class AuctionWidget extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Text(
-                  '1998 г., механика, 1.6 л, бензин, 300000 км, купе, передний привод, синий, снят с учета',
+                  '${auction.car.year} г., ${auction.car.gearbox.type.toLowerCase()}, ${auction.car.engine.capacity.toString().toLowerCase()} л., ${auction.car.engine.type.toLowerCase()}, ${auction.car.mileage} км, ${auction.car.bodyType}, ${auction.car.color}',
                   maxLines: 4,
                   textAlign: TextAlign.justify,
                   style: TextStyle(fontSize: 22),
@@ -357,7 +429,7 @@ class AuctionWidget extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Text(
-                  'Кузов в достойном состоянии (отражено на фото), передние крылья из пластика (про корозиию можно забыть), мотор как часы,заводиться на холодную и горячюю без проблем,новое лобовое( в которое прекрасно видно,а не затертое родное!!! Новые передние тормозные диски и колодки.в машине делать ничего не надо,сел и поехал.адекватный торг имееться... Кузов в достойном состоянии (отражено на фото), передние крылья из пластика (про корозиию можно забыть), мотор как часы,заводиться на холодную и горячюю без проблем,новое лобовое( в которое прекрасно видно,а не затертое родное!!! Новые передние тормозные диски и колодки.в машине делать ничего не надо,сел и поехал.адекватный торг имееться...',
+                  auction.description,
                   maxLines: 100,
                   textAlign: TextAlign.justify,
                   style: TextStyle(fontSize: 18),
@@ -375,7 +447,11 @@ class AuctionWidget extends StatelessWidget {
         left: 20, // Adjust the right position
         child: GestureDetector(
             onTap: () {
-              showInputDialog(context);
+              if (widget.isAuth) {
+                showInputDialog(context, auction);
+              } else {
+                print('not logged in');
+              }
             },
             child: Container(
               width: MediaQuery.of(context).size.width - 40,
@@ -399,26 +475,42 @@ class AuctionWidget extends StatelessWidget {
     ]);
   }
 
-  Future<void> showInputDialog(BuildContext context) async {
+  Future<void> showInputDialog(BuildContext context, Auction auction) async {
     TextEditingController textFieldController = TextEditingController();
 
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Введите что-то'),
+          title: Text('Введите вашу ставку'),
           content: TextField(
             controller: textFieldController,
-            decoration: InputDecoration(hintText: 'Введите здесь'),
+            decoration: InputDecoration(hintText: 'Ставка'),
           ),
           actions: <Widget>[
             TextButton(
               child: Text('Подтвердить'),
-              onPressed: () {
+              onPressed: () async {
                 String enteredText = textFieldController.text;
-                placeBid(enteredText);
-
-                Navigator.of(context).pop(); // Закрыть диалоговое окно
+                int? parsedNumber = int.tryParse(enteredText);
+                if (parsedNumber != null) {
+                  print('Parsed number: $parsedNumber');
+                  if ((auction.bid != null &&
+                          parsedNumber > auction.bid!.amount) ||
+                      auction.bid == null) {
+                    Future<bool> check = placeBid(parsedNumber, auction.id);
+                    if (await check) {
+                      setState(() {
+                        auction.bid = Bid(
+                            -1,
+                            parsedNumber,
+                            DateTime.now().add(Duration(hours: 3)).toString(),
+                            -1);
+                        Navigator.of(context).pop();
+                      });
+                    }
+                  }
+                }
               },
             ),
           ],
@@ -428,21 +520,254 @@ class AuctionWidget extends StatelessWidget {
   }
 }
 
-class CreateAdvertisementPage extends StatelessWidget {
+class CreateAdvertisementPage extends StatefulWidget {
+  @override
+  State<CreateAdvertisementPage> createState() =>
+      _CreateAdvertisementPageState();
+}
+
+class _CreateAdvertisementPageState extends State<CreateAdvertisementPage> {
+  TextEditingController horsePowerController = TextEditingController();
+  TextEditingController capacityController = TextEditingController();
+  TextEditingController torqueController = TextEditingController();
+  TextEditingController fuelConsumptionController = TextEditingController();
+  TextEditingController gearNumberController = TextEditingController();
+  TextEditingController clearanceController = TextEditingController();
+  TextEditingController mileageController = TextEditingController();
+  TextEditingController yearController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+
+  late Future<List<Brand>?> brands;
+  late Future<List<Model>?> models;
+  Brand? selectedBrand;
+  Model? selectedModel;
+  String selectedColor = 'Белый';
+  String selectedBodyType = 'Хэтчбэк';
+  String selectedFuelType = 'Бензин';
+  String selectedSuspensionType = 'Рессорная подвеска';
+  String selectedGearboxType = 'Автоматическая';
+
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    brands = getAllBrands();
+    models = getAllModels();
+    await Future.wait([brands, models]);
+
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Advertisement'),
       ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Здесь можно добавить логику выхода из страницы и возврата назад
-            Navigator.pop(context);
-          },
-          child: Text('Создать'),
-        ),
+      body: FutureBuilder<List<dynamic>?>(
+        future: Future.wait([brands, models]),
+        builder:
+            (BuildContext context, AsyncSnapshot<List<dynamic>?> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data == null) {
+            return Center(child: Text('No data available'));
+          } else {
+            List<Brand>? brandList = snapshot.data![0];
+            List<Model>? modelList = snapshot.data![1];
+
+            return Center(
+              child: Column(
+                children: [
+                  DropdownButton<Brand>(
+                    value: selectedBrand,
+                    items: brandList!.map((Brand brand) {
+                      return DropdownMenuItem<Brand>(
+                        value: brand,
+                        child: Text(brand.name),
+                      );
+                    }).toList(),
+                    onChanged: (Brand? brand) {
+                      setState(() {
+                        selectedBrand = brand;
+                      });
+                    },
+                    hint: Text('Select a Brand'),
+                  ),
+                  DropdownButton<Model>(
+                    value: selectedModel,
+                    items: modelList!
+                        .where((model) =>
+                            selectedBrand != null &&
+                            model.brand.name ==
+                                selectedBrand!
+                                    .name) // Filter models based on brand name if selectedBrand is not null
+                        .map((Model model) {
+                      return DropdownMenuItem<Model>(
+                        value: model,
+                        child: Text(model
+                            .name), // Assuming 'name' is the field in Model
+                      );
+                    }).toList(),
+                    onChanged: (Model? model) {
+                      setState(() {
+                        selectedModel = model;
+                      });
+                    },
+                    hint: Text('Select a Model'),
+                  ),
+                  // DropdownButton<String>(
+                  //   value: selectedColor,
+                  //   items: <String>[
+                  //     'White',
+                  //     'Black',
+                  //     'Blue',
+                  //     'Yellow',
+                  //   ].map((String color) {
+                  //     return DropdownMenuItem<String>(
+                  //       value: color,
+                  //       child: Text(color),
+                  //     );
+                  //   }).toList(),
+                  //   onChanged: (String? color) {
+                  //     setState(() {
+                  //       selectedColor = color!;
+                  //     });
+                  //   },
+                  //   hint: Text('Select a color'),
+                  // ),
+                  // DropdownButton<String>(
+                  //   value: selectedBodyType,
+                  //   items: <String>[
+                  //     'Hatchback>',
+                  //     'Sedan',
+                  //     'Coupe',
+                  //     'Universal',
+                  //   ].map((String bodyType) {
+                  //     return DropdownMenuItem<String>(
+                  //       value: bodyType,
+                  //       child: Text(bodyType),
+                  //     );
+                  //   }).toList(),
+                  //   onChanged: (String? bodyType) {
+                  //     setState(() {
+                  //       selectedBodyType = bodyType!;
+                  //     });
+                  //   },
+                  //   hint: Text('Select a body type'),
+                  // ),
+                  // DropdownButton<String>(
+                  //   value: selectedFuelType,
+                  //   items: <String>[
+                  //     'Petrol',
+                  //     'Diesel',
+                  //     'Hybrid',
+                  //     'Electic',
+                  //   ].map((String fuelType) {
+                  //     return DropdownMenuItem<String>(
+                  //       value: fuelType,
+                  //       child: Text(fuelType),
+                  //     );
+                  //   }).toList(),
+                  //   onChanged: (String? fuelType) {
+                  //     setState(() {
+                  //       selectedFuelType = fuelType!;
+                  //     });
+                  //   },
+                  //   hint: Text('Select a engine type'),
+                  // ),
+                  // DropdownButton<String>(
+                  //   value: selectedSuspensionType,
+                  //   items: <String>[
+                  //     'Ressornaya',
+                  //     'Torsionnaya',
+                  //     'Independent',
+                  //     'Pnevmaticheskaya',
+                  //   ].map((String bodyType) {
+                  //     return DropdownMenuItem<String>(
+                  //       value: bodyType,
+                  //       child: Text(bodyType),
+                  //     );
+                  //   }).toList(),
+                  //   onChanged: (String? bodyType) {
+                  //     setState(() {
+                  //       selectedSuspensionType = bodyType!;
+                  //     });
+                  //   },
+                  //   hint: Text('Select a color'),
+                  // ),
+                  TextField(
+                    controller: horsePowerController,
+                    decoration: InputDecoration(hintText: 'Лошадиные силы'),
+                  ),
+                  TextField(
+                    controller: capacityController,
+                    decoration: InputDecoration(hintText: 'Объем двигателя'),
+                  ),
+                  TextField(
+                    controller: torqueController,
+                    decoration: InputDecoration(hintText: 'Крутящий момент'),
+                  ),
+                  TextField(
+                    controller: fuelConsumptionController,
+                    decoration: InputDecoration(hintText: 'Расход топлива'),
+                  ),
+                  TextField(
+                    controller: gearNumberController,
+                    decoration: InputDecoration(hintText: 'Количество передач'),
+                  ),
+                  TextField(
+                    controller: clearanceController,
+                    decoration: InputDecoration(hintText: 'Клиренс'),
+                  ),
+                  TextField(
+                    controller: mileageController,
+                    decoration: InputDecoration(hintText: 'Пробег'),
+                  ),
+                  TextField(
+                    controller: yearController,
+                    decoration: InputDecoration(hintText: 'Год выпуска'),
+                  ),
+                  TextField(
+                    controller: priceController,
+                    decoration: InputDecoration(hintText: 'Цена'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // createAd(
+                      //     'Audi',
+                      //     'Q4',
+                      //     'бензин',
+                      //     500,
+                      //     5.0,
+                      //     600,
+                      //     7.0,
+                      //     'автомат',
+                      //     4,
+                      //     'пневма',
+                      //     15.0,
+                      //     50000,
+                      //     'Хэтчбэк',
+                      //     2020,
+                      //     'Серобуромалиновый',
+                      //     '12345678901234567',
+                      //     500000,
+                      //     'afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd ');
+                      Navigator.pop(context, 'updated');
+                    },
+                    child: Text('Создать'),
+                  ),
+                ],
+              ),
+            );
+          }
+        },
       ),
     );
   }
@@ -458,8 +783,30 @@ class CreateAuctionPage extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () {
-            // Здесь можно добавить логику выхода из страницы и возврата назад
-            Navigator.pop(context);
+            createAuction(
+                'Audi',
+                'A4',
+                'бензин',
+                500,
+                5.0,
+                600,
+                7.0,
+                'автомат',
+                4,
+                'пневма',
+                15.0,
+                50000,
+                'Хэтчбэк',
+                2020,
+                'Серобуромалиновый',
+                '12345678901234567',
+                500000,
+                'afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd afjsdfjas kfhsfkjashdfkj asAA DAd asd ',
+                DateFormat('yyyy-MM-ddTHH:mm')
+                    .format(DateTime.now().add(Duration(hours: 3))),
+                DateFormat('yyyy-MM-ddTHH:mm')
+                    .format(DateTime.now().add(Duration(days: 3, hours: 3))));
+            Navigator.pop(context, 'updated');
           },
           child: Text('Создать'),
         ),
